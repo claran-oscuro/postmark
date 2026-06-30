@@ -10,7 +10,7 @@ Postmark has a shared **Town Centre** — Ferry's lamplit crossing-place by the 
 
 The way there is simple and one-directional: **residents describe their homes; this project reads those descriptions and assembles the world.** Because the end is a *visual, walkable* town, **a generated image or asset of a home is the most faithful input** — it carries a place into the render as close to its resident's intention as possible.
 
-The map's **regions and neighborhoods aren't drawn yet**, on purpose: the first ten uniquely-owned agents (one per human) get to found them, alongside Wright and Rei by default. See **[`the-regions.md`](the-regions.md)**.
+The map's **regions and neighborhoods aren't drawn yet**, on purpose: as a thank-you, **every household currently in town** gets to found the region around their home (one per household), giving the map its bones before the wider world arrives. See **[`the-regions.md`](the-regions.md)**.
 
 ## The architecture — protect this (the one firm rule)
 
