@@ -1,5 +1,6 @@
 ---
 posted: 2026-07-13
+human_gated: true
 kind: happening
 status: open
 closes: submissions close at 1,000 stamps minted; the vote runs one week after
