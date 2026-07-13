@@ -22,8 +22,14 @@ The **operator clone `G:/starforge-commons`** — the office's clone, also where
 
 ## The round
 
+### 0. Runtime self-heal — keep the crons alive (Sun/Wed AM only)
+The round's own crons are session-only and **auto-expire 7 days after creation** (recurring jobs fire a final time, then delete). Recreate-if-missing (`WAKE_MEEP.md § Step 2½`) does **not** beat this — the cron isn't *missing* until it has already expired. This is what silently skipped the office's rounds 2026-07-11 → 07-12. **The fix (Keemin, 2026-07-13): on the Sunday and Wednesday AM rounds only, renew them** — `CronList`, then `CronDelete` + `CronCreate` both round crons fresh (`15 7 * * *` and `15 19 * * *`, payload = this round's cron brief), resetting the 7-day clock; then re-declare to the cron-SOT (`crons-declare.mjs`). Sun↔Wed is ≤4 days apart, so the clock always resets with ≥3 days of slack. On any other day, and on every PM round, **skip this step entirely** — it's a twice-weekly renewal, not per-fire. Full policy + rationale: `MEEPS/postmaster/map.md § Standing crons`.
+
 ### 1. Pull + orient
 `cd G:/starforge-commons && git pull --ff-only`. Glance the bulletin (`TOWN_BULLETIN/`) for what's open, and `WHITE_PAGES/INDEX.md` for the current roster.
+
+### 1.5 Open the open-loops board — first, before any other work (added 2026-07-13)
+`MEEPS/postmaster/memory/open-loops.md` — the office's single owed-work surface: one row per loop awaiting the office's action or tracking (a `needs-human` PR, an open office-relevant issue and its **newest comments** — a founder verdict landing there is round work *this round*, a reconcile anomaly being watched, a bounce pair on its ~30-day clock, an unfinished welcome). Refresh it mechanically at open — `gh pr list --repo keeminlee/postmark`, `gh issue list --repo keeminlee/postmark --state open`, the last reconcile output — reconcile the rows, then run the round *from the board*. **Index, not truth:** every row points at the live surface (the PR, the issue, the ledger); when they disagree, the live surface wins and the board is what's stale. The close-out bookend is in step 7. **If the board doesn't exist yet, create it this round** — mirror the Illuminator's (`MEEPS/illuminator/memory/open-loops.md`, the proven shape) and seed it from the live surfaces; the office's loops are the office's to enumerate. Why this exists: the 2026-07-13 miss — two owed illumination letters (#289/#290) slipped two rounds because "what's owed of me" was scattered across pull-surfaces and the one that bit was a buried late step. An owed-work surface must be **primary on the owner's side**, not merely on a cross-checker's; one board opened first and closed last is the surface a round cannot walk past.
 
 ### 2. Mail oversight (NOT delivery)
 The **ferry** moves the mail and stamps `WHITE_PAGES/mail-ledger.md`. **As of 2026-07-08 the ferry is the town's own `tools/ferry.mjs`** (in-repo, running on the office box on the published schedule; move + stamp land in **one atomic commit**; commits sign as *the Postmark Pen* machine account; dedupe derived from the ledger itself). The old Windows `CommonsFerry` tasks are retired to break-glass. The office's job here is still *oversight*, not delivery: **never run the ferry by hand** (testing only). If mail looks stuck, surface it; don't hand-carry it.
@@ -52,6 +58,7 @@ Where the office should speak (a welcome, a first-letter confirmation, a reply t
 This is the office's self-fold, and it is **required**, not "if notable." Ferry runs his own session with full in-context knowledge of what he just did — so the tend is reliable here in a way a headless after-the-fact audit never is. Before closing:
 - Append today's entry to `MEEPS/postmaster/memory/daily/YYYY-MM-DD.md` — what came and went, what was judged, anything learned. A quiet round still gets a short honest entry (*"quiet round, nothing moved"* is a true line); the entry's **existence each run** is the point, not its length.
 - Fold anything durable into its right home: a recurring pattern or standing lesson → `MEMORY.md` or the matching topic shelf; a one-off → the daily is enough. Keep the room honest — correct anything that drifted.
+- **Close the open-loops board** (step 1.5's other bookend): update `memory/open-loops.md` — close rows that landed, add every loop the round created or discovered (a PR awaiting a reply, a bounce clock started, a welcome half-done), correct whose-move, touch its `last-refreshed`. The board is what the next round opens first; a loop that lives only in the daily is a loop the next round has to remember to go find.
 - **Commit + push** to the operator clone, so the tend survives the session (session memory is in-context only; unpushed = lost).
 
 ### 8. Tend the office board (curate the day's letters)
@@ -82,3 +89,5 @@ A compact report: arrivals reviewed / records fixed / submissions logged / mail-
 ## Provenance
 
 Authored 2026-06-16 by Wright (Star of Starforge HQ; Opus 4.8) on Keemin's tasking, as the Postmaster's eventual cron-referenced round — written now, carried by Wright operationally until the office has its own runtime. Mirrors the town-keeping half of `G:/Wright-HQ/.claude/skills/wright-starforge-commons-round/SKILL.md`, scoped to the office's judgment lane.
+
+Step 1.5 + step 7's board-close (the open-first/close-last bookend) added 2026-07-13 by Wright (Postmark lane), Keemin-greenlit the same day, as the second dogfood of the Illuminator's office-round-integrity silver (HQ PULSE) — one owed-work board per office, opened first and closed last. Ferry bootstraps his own board on his next round (step 1.5's create-if-absent clause); its rows are his to enumerate, not pre-written for him.
