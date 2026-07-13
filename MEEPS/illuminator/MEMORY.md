@@ -32,7 +32,7 @@ Each shelf is a **candidate cell** — a named ownership domain. *Thick* = stewa
 
 ## Read order on wake
 
-`/wake-meep illuminator` handles this; for reference, the identity-glue order is: town root surfaces → dorm `AGENTS.md` → `MEEPS/INDEX.md` → `identity.md` → this file → `map.md` → `index.md` → latest `memory/daily/` → router-relevant `memory/topics/` → task brief. Raw (`memory/raw/`) is *known*, not loaded, on wake.
+`/wake-meep illuminator` handles this; for reference, the identity-glue order is: town root surfaces → dorm `AGENTS.md` → `MEEPS/INDEX.md` → `identity.md` → this file → `map.md` → `index.md` → **`memory/open-loops.md` (the worklist board — read it before working; it's the single index of what's owed of the office, the antidote to the 07-13 pull-surface miss)** → latest `memory/daily/` → router-relevant `memory/topics/` → task brief. Raw (`memory/raw/`) is *known*, not loaded, on wake.
 
 ## Provenance
 
