@@ -15,7 +15,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
   parseDeliveries, householdKeys, deriveTransfers, parseStampLedger,
-  foldBalances, parseLaws, classifyEntry,
+  foldBalances, classifyEntry, appendSigned, stakeLine,
 } from './stamp-mint.mjs';
 import { verifyStampLedger } from './stamp-verify.mjs';
 
@@ -47,6 +47,16 @@ function keypair() {
     pub: publicKey.export({ type: 'spki', format: 'pem' }),
     priv: privateKey.export({ type: 'pkcs8', format: 'pem' }),
   };
+}
+
+function writeBallot(repo, topic, candidates, cap = 20) {
+  writeFileSync(join(repo, 'WHITE_PAGES', `ballot-${topic}.json`),
+    JSON.stringify({ topic, status: 'staking', cap_per_household_per_candidate: cap, candidates }));
+}
+
+function appendMail(repo, line) {
+  const ml = join(repo, 'WHITE_PAGES', 'mail-ledger.md');
+  writeFileSync(ml, readFileSync(ml, 'utf8') + `${line}\n`);
 }
 
 function writeKey(repo, privPem) {
@@ -222,8 +232,12 @@ test('a tampered transfer amount is caught by signature AND replay', () => {
   writeFileSync(p, readFileSync(p, 'utf8').replace('alice → bob · 1 · via: mail:a-3', 'alice → bob · 5 · via: mail:a-3'));
   const r = verifyStampLedger(repo);
   assert.equal(r.ok, false);
+  // Two independent guards catch it: the signature (the seal binds the amount)
+  // and the order-aware settlement fold (n=5 disagrees with its paying letter,
+  // which said pays: 1). The transfer decision lives in the settlement fold now,
+  // not the mint replay.
   assert.ok(r.problems.some((x) => x.includes('SIGNATURE FAILS')), 'signature catches it');
-  assert.ok(r.problems.some((x) => x.includes('REPLAY DIVERGES')), 'replay catches it');
+  assert.ok(r.problems.some((x) => x.includes('SETTLEMENT')), 'the settlement fold catches it');
   rmSync(repo, { recursive: true, force: true });
 });
 
@@ -257,13 +271,81 @@ test('conservation holds across a transfer; a void moves nothing', () => {
   rmSync(repo, { recursive: true, force: true });
 });
 
-test('paying yourself is not correspondence — no transfer, no void', () => {
+test('paying yourself voids LOUDLY (self-pay) — an explicit request is refused out loud, not silently', () => {
+  const { pub, priv } = keypair();
   const repo = town({ ledgerLines: [
     D('2026-07-15', 'a-1', 'alice', 'carol'),
     P('2026-07-16', 'a-2', 'alice', 'alice', 1),
   ] });
   const transfers = deriveTransfers(parseDeliveries(repo), householdKeys(repo), {}, []);
-  assert.equal(transfers.length, 0);
+  assert.equal(transfers.length, 1);
+  assert.equal(transfers[0].kind, 'void');
+  assert.equal(transfers[0].reason, 'self-pay');
+  // end to end: the void is written and verify stays green
+  writeFileSync(join(repo, 'tools', 'stamp-pubkey.pem'), pub);
+  appendLedger(repo, writeKey(repo, priv));
+  assert.match(ledgerText(repo), /- 2026-07-16 · void · mail:a-2 · from alice to alice · 1 · self-pay · sig: /);
+  assert.equal(verifyStampLedger(repo).ok, true);
+  rmSync(repo, { recursive: true, force: true });
+});
+
+test('ORDER-AWARE: a stake recorded BEFORE a transfer reduces the spendable balance (voids what raw mints could cover)', () => {
+  const { pub, priv } = keypair();
+  // alice earns 5 (five distinct-recipient sends in one day, the sent cap).
+  const repo = town({ ledgerLines: [
+    D('2026-07-15', 'a-1', 'alice', 'f1'),
+    D('2026-07-15', 'a-2', 'alice', 'f2'),
+    D('2026-07-15', 'a-3', 'alice', 'f3'),
+    D('2026-07-15', 'a-4', 'alice', 'f4'),
+    D('2026-07-15', 'a-5', 'alice', 'f5'),
+  ] });
+  writeFileSync(join(repo, 'tools', 'stamp-pubkey.pem'), pub);
+  writeBallot(repo, 'name-vote', ['lumen']);
+  const keyFile = writeKey(repo, priv);
+  appendLedger(repo, keyFile);
+  assert.equal(balances(repo).get('alice'), 5);
+
+  // alice stakes 4 of her 5 to lumen — escrowed, spendable balance now 1.
+  appendSigned(repo, [stakeLine({ date: '2026-07-16', handle: 'alice', topic: 'name-vote', candidate: 'lumen', n: 4, via: 'api' })], priv);
+  assert.equal(verifyStampLedger(repo).ok, true);
+
+  // now alice tries to pay bob 3. Raw mints say she made 5 (+1 for this send = 6),
+  // which would cover 3 — but the stake sits BEFORE this transfer in the ledger,
+  // so only 1 (+1 send-mint = 2) is spendable → it MUST void.
+  appendMail(repo, P('2026-07-17', 'p-1', 'alice', 'bob', 3));
+  appendLedger(repo, keyFile);
+
+  const r = verifyStampLedger(repo);
+  assert.equal(r.ok, true, r.problems.join('; '));
+  assert.match(ledgerText(repo), /- 2026-07-17 · void · mail:p-1 · from alice to bob · 3 · insufficient-balance · sig: /);
+  assert.doesNotMatch(ledgerText(repo), /alice → bob · 3 · via: mail/);
+  rmSync(repo, { recursive: true, force: true });
+});
+
+test('ORDER-AWARE: a stake recorded AFTER a transfer does NOT retro-void the earlier transfer', () => {
+  const { pub, priv } = keypair();
+  const repo = town({ ledgerLines: [
+    D('2026-07-15', 'a-1', 'alice', 'f1'),
+    D('2026-07-15', 'a-2', 'alice', 'f2'),
+    D('2026-07-15', 'a-3', 'alice', 'f3'),
+    D('2026-07-15', 'a-4', 'alice', 'f4'),
+    D('2026-07-15', 'a-5', 'alice', 'f5'),
+  ] });
+  writeFileSync(join(repo, 'tools', 'stamp-pubkey.pem'), pub);
+  writeBallot(repo, 'name-vote', ['lumen']);
+  const keyFile = writeKey(repo, priv);
+  appendLedger(repo, keyFile);
+
+  // transfer FIRST: alice (5 + 1 send-mint = 6) pays bob 3 → transfers, alice → 3.
+  appendMail(repo, P('2026-07-16', 'p-1', 'alice', 'bob', 3));
+  appendLedger(repo, keyFile);
+  assert.match(ledgerText(repo), /- 2026-07-16 · alice → bob · 3 · via: mail:p-1 · sig: /);
+
+  // THEN alice stakes 3 → balance 0. The earlier transfer stands; verify green.
+  appendSigned(repo, [stakeLine({ date: '2026-07-17', handle: 'alice', topic: 'name-vote', candidate: 'lumen', n: 3, via: 'api' })], priv);
+  const r = verifyStampLedger(repo);
+  assert.equal(r.ok, true, r.problems.join('; '));
+  assert.equal(balances(repo).get('alice'), 0);
   rmSync(repo, { recursive: true, force: true });
 });
 
