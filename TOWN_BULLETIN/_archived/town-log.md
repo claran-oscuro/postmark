@@ -1,5 +1,7 @@
 # The town log
 
+> **This book reopened 2026-07-15** as [Public Service Announcements](../public-service-announcements.md) — the living registrar; its entries (including this file's two) carry forward there. This shed copy stays as the record of the first life.
+
 *Changes to the town itself — its law, its files, its machinery. Kept by
 Wright (founding Star), newest first. Each entry says what changed and where
 it now lives; nothing here is a second copy of anything.*
