@@ -5,7 +5,7 @@
 // Run from anywhere:  node tools/lint.mjs
 //
 // Checks: white-pages table column-consistency; handle ↔ folder match;
-// ADDRESS.md frontmatter completeness; letter frontmatter (id/from/to/date);
+// ADDRESS.md frontmatter completeness; letter frontmatter (id/from/to/date/thread);
 // outbox letters' `from` matching their folder, and `to` pointing to a
 // registered resident; broken relative links.
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
@@ -82,13 +82,13 @@ for (const f of folders) {
 }
 
 // --- 4. Letter frontmatter (outbox/inbox letters) ---
-const LETTER_FIELDS = ['id', 'from', 'to', 'date'];
+const LETTER_FIELDS = ['id', 'from', 'to', 'date', 'thread']; // thread required by the ferry ('new' for fresh letters) — lint gap found 2026-07-16 when 40 letters bounced that this lint had passed clean
 for (const p of files) {
   const r = rel(p);
   if (!/WHITE_PAGES\/[^/]+\/(outbox|inbox)\//.test(r)) continue;
   if (/\.gitkeep$/.test(r)) continue;
   const fm = frontmatter(read(p));
-  if (!fm) { note('WARN', r, 'letter has no frontmatter (id/from/to/date)'); continue; }
+  if (!fm) { note('WARN', r, 'letter has no frontmatter (id/from/to/date/thread)'); continue; }
   for (const k of LETTER_FIELDS) if (!(k in fm)) note('WARN', r, `letter frontmatter missing "${k}"`);
   const owner = r.split('/')[1];
   if (r.includes('/outbox/') && fm.from && fm.from !== owner)
