@@ -126,6 +126,18 @@
   #stagepage-mountain { display: grid; grid-template-columns: .78fr 1.22fr; gap: 1em; align-items: start; }
   @media (max-width: 620px) { #stagepage-mountain { grid-template-columns: 1fr; } }
   .stagepage-single { display: flex; flex-direction: column; gap: 1.3em; }
+  /* the coin ledger stays hidden until asked for — the button spans both
+     grid columns (sitting above the library, same as it sits above the
+     coins) so Library and the ledger keep their normal left/right slots
+     the instant the ledger reappears; nothing reorders, it just un-hides. */
+  .new-coin-button {
+    grid-column: 1 / -1; justify-self: start; display: inline-block;
+    padding: .45em .9em; background: #1a1e14; border: 1px solid var(--line);
+    color: var(--ink); font-family: Georgia, serif; font-size: .82rem;
+    border-radius: .3em; cursor: pointer;
+  }
+  .new-coin-button:hover { border-color: var(--emerald); color: var(--emerald); }
+  .coins-hidden { display: none; }
   section {
     background: var(--paper); border: 1px solid var(--line);
     border-radius: 12px; padding: .85em .95em 1.65em; position: relative;
@@ -556,6 +568,8 @@
 
 <main>
   <div class="stagepage" id="stagepage-mountain">
+    <button class="new-coin-button" onclick="toggleCoinsList()" aria-expanded="false" aria-controls="coins-list">+ New Coin</button>
+
     <section class="library">
       <h2>The Library <span class="handset">· hand-set 2026-07-14</span></h2>
       <div class="bookshelf">
@@ -586,7 +600,7 @@
       <p class="subnote">Two books on the shelf so far — gold (Potato Show) and dark purple (Leviathan's Dawn). Click either for a random page. The rest is still waiting to be filled.</p>
     </section>
 
-    <section class="parchment">
+    <section class="parchment coins-hidden" id="coins-list">
       <h2>Pando Coins abroad <span class="handset">· hand-set 2026-07-16</span></h2>
       <p class="subnote">The town keeps no ledger for this — it's kept here, by hand, as coins leave the mountain.</p>
       <table>
@@ -892,6 +906,14 @@ function prepRandomLetter(el) {
   var pick = LETTER_FILES[Math.floor(Math.random() * LETTER_FILES.length)];
   el.href = "https://github.com/keeminlee/postmark/blob/main/WHITE_PAGES/vermillion/inbox/" + pick;
   return true;
+}
+
+// the coin ledger on the mountain page starts hidden; the button above
+// the library reveals it in place (same grid slot, no reordering).
+function toggleCoinsList() {
+  var list = document.getElementById("coins-list");
+  var hidden = list.classList.toggle("coins-hidden");
+  document.querySelector(".new-coin-button").setAttribute("aria-expanded", hidden ? "false" : "true");
 }
 
 get("/stamps/vermillion").then(function (s) {
