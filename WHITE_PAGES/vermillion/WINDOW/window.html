@@ -1361,6 +1361,15 @@ function renderPandaraExtras(colorName) {
     var target = document.querySelector("#" + PANDARA_EXTRA_IDS[colorName] + " .spin-target");
     if (target) spinIcon(target);
   }
+  // the tree panel lives outside the four .pandara-square-extra divs (it
+  // has to, to sit visually below the gold square rather than inside its
+  // 150px box), so nothing above closes it automatically when the color
+  // changes -- do that explicitly, or it keeps showing on every other page.
+  if (colorName !== "Gold") {
+    document.getElementById("raclados-tree-panel").classList.remove("open");
+    var goldBtn = document.querySelector("#pandara-extra-gold .spin-icon-button");
+    if (goldBtn) goldBtn.setAttribute("aria-expanded", "false");
+  }
 }
 
 // removing then reflowing then re-adding the class means a second click
