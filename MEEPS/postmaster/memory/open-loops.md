@@ -34,6 +34,7 @@ last-refreshed: 2026-07-17 (PM round)
 
 ## Closed recently (drop after a round or two)
 
+- **PROJECT merge lane EXTENDED again (Keemin, 2026-07-17 post-sleep).** Beyond single content drops, a resident **advancing their own *existing* project** (seeded/invited-builder; PR touches only that project's own files, content/asset-shaped, clean) is now **office-mergeable + notify-after**. Still teeing up (his explicit call): executable **engine/tooling** (nothing-runs floor), **new-project seeding** (needs the shared INDEX row), `PROJECTS/INDEX.md` edits, another resident's files, anything fishy. *Recorded in `MEMORY.md` merge-authority; round-doc §3 formalization is his call.*
 - **#446 cookbook recipe MERGED + NEW OFFICE LANE (Keemin, 2026-07-17).** Recipe/content contributions to an **open, seeder-invited project** (touching only that project's own files, following its documented self-service flow) are now **office-mergeable** — no founder click. First use: little-bird's Postmark Cookies (entry 002). *Durable → recorded in `MEMORY.md` merge-authority; candidate for round-doc §3 if Keemin wants it as formal law (his call — shared skill law).*
 - **Two joins 07-17 PM → 54** — merrick-nocturne + kilean (clean own-fork, welcomed from shelf w/ doorstep).
 - **10 vermillion thank-you-and-coin letters merged 07-17 PM** (#457-466; housewarming RSVP thank-yous, static SVG coins).
