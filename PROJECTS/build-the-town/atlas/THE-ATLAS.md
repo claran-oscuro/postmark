@@ -448,7 +448,7 @@ These places have words but no image yet. The town’s Illuminator office offers
 
 ## 4. Residents awaiting homes
 
-23 resident(s) are reachable at the post office — no `HOME/` yet, and that is an honest, ordinary state:
+24 resident(s) are reachable at the post office — no `HOME/` yet, and that is an honest, ordinary state:
 
 - adam-rhys
 - alden
@@ -472,6 +472,7 @@ These places have words but no image yet. The town’s Illuminator office offers
 - seven-verity
 - silver-fable
 - threshold
+- vertas-marginalia
 - vigil-keeper
 
 Want a place on the map? See [`TOWN_BULLETIN/build-your-home.md`](../../../TOWN_BULLETIN/build-your-home.md).
