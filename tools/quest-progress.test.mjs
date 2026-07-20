@@ -11,7 +11,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, copyFileSync } from 'nod
 import { join, dirname } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { foldQuestProgress, questBoard, loadRegistry } from './quest-progress.mjs';
+import { foldQuestProgress, questBoard, loadRegistry, foldLeaderboard, renderSnapshot } from './quest-progress.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = join(HERE, '..');
@@ -83,6 +83,39 @@ test('a resident with no activity today reads a clean zero', () => {
   try {
     const board = questBoard(d, 'nobody', { today: DAY });
     for (const q of board.quests) { assert.equal(q.progress, 0); assert.equal(q.complete, false); }
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
+test('leaderboard: today rows sorted (completions, then progress, then handle), all-time tallied', () => {
+  const PRIOR = '2026-07-19';
+  const d = town([
+    // alice completes Reach out today (5 distinct) AND completed it the prior day → all-time 2
+    ['alice', 'r1'], ['alice', 'r2'], ['alice', 'r3'], ['alice', 'r4'], ['alice', 'r5'],
+    ['alice', 'r1', PRIOR], ['alice', 'r2', PRIOR], ['alice', 'r3', PRIOR], ['alice', 'r4', PRIOR], ['alice', 'r5', PRIOR],
+    // bob: 3 today (no completion)
+    ['bob', 'x1'], ['bob', 'x2'], ['bob', 'x3'],
+    // carol: no activity today (prior only) → must NOT appear (nonzero-today only)
+    ['carol', 'y1', PRIOR],
+  ]);
+  try {
+    const lb = foldLeaderboard(d, { today: DAY });
+    const handles = lb.rows.map((r) => r.handle);
+    // recipients (r*, x*) legitimately appear — they were REACHED today. The
+    // ranking is what matters: alice (1 completion) first, bob (progress 3) next,
+    // then the progress-1 recipients; carol (no activity today) absent.
+    assert.equal(lb.rows[0].handle, 'alice');
+    assert.equal(lb.rows[0].completionsToday, 1);
+    assert.equal(lb.rows[0].allTime, 2, 'alice completed Reach out on two days');
+    assert.equal(lb.rows[1].handle, 'bob', 'progress 3 ranks above the progress-1 recipients');
+    assert.ok(!handles.includes('carol'), 'carol had no progress today');
+    assert.equal(lb.totalCompletionsToday, 1);
+  } finally { rmSync(d, { recursive: true, force: true }); }
+});
+
+test('snapshot is deterministic (identical state → identical bytes)', () => {
+  const d = town([['alice', 'r1'], ['alice', 'r2'], ['bob', 'r3']]);
+  try {
+    assert.equal(renderSnapshot(d, { today: DAY }), renderSnapshot(d, { today: DAY }));
   } finally { rmSync(d, { recursive: true, force: true }); }
 });
 

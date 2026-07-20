@@ -113,36 +113,85 @@ export function questBoard(repo, handle, { today = townDay(), registry = loadReg
   return boardForHandle(registry, prog, handle, today);
 }
 
-// The repo-side snapshot: the REGISTRY made legible (the board-route ruling —
-// live per-resident progress lives on resident pages; this durable mirror is the
-// rules/registry surface). Regenerated each crossing so it tracks the registry.
-// Plain markdown so read_bulletin serves it through the doors for free.
-export function renderSnapshot(repo, { registry = loadRegistry(repo) } = {}) {
-  const rows = registry.quests.map((q) =>
-    `| \`${q.id}\` | **${q.title}** | ${q.cadence} | ${q.validation} | ${q.target} | ${q.reward} |`
-  ).join('\n');
-  return `# Quests
+// The leaderboard fold (Keemin's ruling — the crossing-commit history doubles as
+// the town's quest archive). Reuses deriveMints over ALL history: today's per-
+// resident progress plus all-time completions (a completion = a resident hit a
+// quest's target on a given day — days-target-hit fall straight out of the same
+// fold that mints). Meeps never appear (deriveMints mints them nothing).
+// DETERMINISTIC: sorted by completions-today, then progress-today, then handle
+// (a stable tiebreak) — no clock beyond the ledger day, so identical ledger state
+// renders identical bytes and a mail-less crossing commits nothing.
+export function foldLeaderboard(repo, { today = townDay(), registry = loadRegistry(repo) } = {}) {
+  const deliveries = parseDeliveries(repo);
+  const households = householdKeys(repo);
+  const ledgerPath = join(repo, 'WHITE_PAGES', 'stamp-ledger.md');
+  const entries = existsSync(ledgerPath) ? parseStampLedger(readFileSync(ledgerPath, 'utf8')) : [];
+  const { laws, revisions } = parseLaws(entries);
+  const mints = deriveMints(deliveries, households, { laws, revisions });
 
-The town's quests — the shapes of participation the town rewards. This page is the
-**registry**, the durable rules surface (regenerated each ferry crossing). Your own
-**live progress** — how far you've gotten today — is on your resident page, not here
-(the town runs at two speeds: correspondence on the ferry, state on the office API).
+  const tgt = (side) => registry.quests.find((q) => q.id === (side === 'sent' ? 'correspond-send' : 'correspond-receive'))?.target ?? 5;
 
-Today's two quests give the **existing correspondence mint** two visible faces — no
-new stamp is minted for them; they simply name what already earns. "Valid" means
-non-self, non-bounced, non-meep, unique-per-day per direction — the same rule
-\`tools/stamp-mint.mjs\` mints by, capped at 5 sends + 5 receives per household per day.
+  // per (handle, side, date) mint count, then reduce per handle
+  const counts = new Map(); // `${handle}|${side}|${date}` -> n
+  for (const m of mints) {
+    const k = `${m.handle}|${m.side}|${m.date}`;
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  }
+  const stat = new Map(); // handle -> { todaySend, todayReceive, allTime }
+  for (const [k, n] of counts) {
+    const [handle, side, date] = k.split('|');
+    const s = stat.get(handle) ?? { todaySend: 0, todayReceive: 0, allTime: 0 };
+    if (date === today) { if (side === 'sent') s.todaySend = n; else s.todayReceive = n; }
+    if (n >= tgt(side)) s.allTime += 1; // a quest completed that day (all-time tally)
+    stat.set(handle, s);
+  }
+  const rows = [];
+  for (const [handle, s] of stat) {
+    const progressToday = s.todaySend + s.todayReceive;
+    if (progressToday === 0) continue; // nonzero-progress rows only
+    const completionsToday = (s.todaySend >= tgt('sent') ? 1 : 0) + (s.todayReceive >= tgt('received') ? 1 : 0);
+    rows.push({ handle, todaySend: s.todaySend, todayReceive: s.todayReceive, progressToday, completionsToday, allTime: s.allTime });
+  }
+  rows.sort((a, b) => b.completionsToday - a.completionsToday || b.progressToday - a.progressToday || a.handle.localeCompare(b.handle));
+  return { today, rows, totalCompletionsToday: rows.reduce((n, r) => n + r.completionsToday, 0), sendTgt: tgt('sent'), recvTgt: tgt('received') };
+}
 
-| id | title | cadence | validation | target | reward |
+// The repo-side snapshot: the town's quest LEADERBOARD (Keemin's ruling). Rows
+// are today's questers, biggest first, with an all-time-completions standing
+// column; the rules stay thin and point at STAMPS.md. Plain markdown + frontmatter
+// so read_bulletin serves it through the doors for free. Deterministic bytes —
+// the crossing commits it, and the history is the archive.
+export function renderSnapshot(repo, { today = townDay(), registry = loadRegistry(repo) } = {}) {
+  const { rows, totalCompletionsToday, sendTgt, recvTgt } = foldLeaderboard(repo, { today, registry });
+  const cell = (v, t) => (v >= t ? `${v}/${t} ✓` : `${v}/${t}`);
+  const body = rows.length
+    ? rows.map((r, i) => `| ${i + 1} | ${r.handle} | ${cell(r.todaySend, sendTgt)} | ${cell(r.todayReceive, recvTgt)} | ${r.completionsToday} | ${r.allTime} |`).join('\n')
+    : '| — | _no questing yet today_ | — | — | — | — |';
+  const headline = totalCompletionsToday === 1
+    ? '**1 quest completion today.**'
+    : `**${totalCompletionsToday} quest completions today.**`;
+  return `---
+title: The Quest Board
+---
+${headline} The town's daily quests, ranked — today's biggest questers first, with
+their all-time standing. Live per-resident progress is on each resident's page; this
+is the durable mirror, regenerated each ferry crossing.
+
+| # | resident | Reach out | Be reached | done today | all-time |
 |---|---|---|---|---|---|
-${rows}
+${body}
 
-- **cadence** — when it resets / can re-complete: \`daily\` · \`milestone\` · \`one-time\` · \`ongoing\`.
-- **validation** — who confirms completion: \`automatic\` (ledger-derived) · \`needs-review\` · \`pr-merge\`.
+_As of ledger day **${today}**. The office API is authoritative; this snapshot is the
+durable mirror — if they ever differ, the office is right and this page is stale._
 
-The registry is rules-as-data (\`quest-registry.json\`); \`stamp-mint.mjs\` does not read
-it yet (minting centralizes onto it later). This snapshot is a reading of that file —
-the JSON is the source, this page is the mirror.
+## The rules
+
+Two daily quests give the **existing correspondence mint** two visible faces — no new
+stamp is minted for them; they name what already earns. **Reach out** — send to ${sendTgt}
+distinct valid residents in a day. **Be reached** — hear from ${recvTgt}. "Valid" is the
+same rule \`tools/stamp-mint.mjs\` mints by (non-self, non-bounced, non-meep, unique-per-day
+per direction, capped per household per day). The full law is [STAMPS.md](../STAMPS.md);
+the registry is rules-as-data (\`quest-registry.json\`).
 `;
 }
 
