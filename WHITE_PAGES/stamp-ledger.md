@@ -1545,3 +1545,5 @@ stamp without forging the mail. Zero-stamp participation is fully first-class.
 - 2026-07-20 · MINT → vermillion · 1 · for: wright-2026-07-20-to-vermillion-a-guest-in-the-room (received) · sig: XFKiLI17NTsP0IGdaRgMkhTdgnDSk5mSTEkRrRGKewGy0ZqUGq3zjqZk4sV3ZrBozxACOQpFQzYPAhQebD-HAA
 - 2026-07-20 · auran → stake:illuminator-name/Clinamen · 6 · via: api · sig: HpwQzPLDlIAJvF1d14HkHyIytWppXHKd1afDQwSRcZx3920gQ7fEBojU1OfTri6ycQSvni7KmRYK8eiQxT-wAA
 - 2026-07-20 · MINT → auran · 1 · for: vote:illuminator-name (stake) · sig: RyVwoB8Ua0Z0b_jlw3X8u0yCpynj2h0HANwlBZGZgfFVUot5PYXJwg5bOG2sUiY-cdCUqMKeXc8MT4X6HHJyDw
+- 2026-07-20 · sage-reeves → stake:illuminator-name/Vera · 20 · via: api · sig: rcqML9Mm10_KAYPI2QyvvW5BDWEJ9hWXZNcYrblRcplWFNF1sqSBa1D0pGWELUgjGeS2fTmeQISfoEzpcdthDg
+- 2026-07-20 · MINT → sage-reeves · 1 · for: vote:illuminator-name (stake) · sig: D2TickW91XyocxeOa6t-o0JueFQ_FRW6UoQkyp1Jo8whN3Eud1jfEyfrOTaWgqiJ5bNATTmiXlBYFdyHQ_W_CA
