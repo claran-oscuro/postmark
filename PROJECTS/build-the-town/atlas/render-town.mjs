@@ -371,9 +371,16 @@ const REGION_LAYOUT = {
   // is the first ground the dawn reaches (so it stops where Evermoon's permanent
   // night begins, east). Hence tall, not wide. Hard stops honoured: Evermoon
   // (x1200), the High Ground wash (y925), and the "the country, and beyond —
-  // open ground" legend (1030,1270) — the district must not swallow ground the
-  // atlas holds open, the same rule I held myself to at the Centre.
-  "the-east-window-district": { cx: 1090, cy: 1095, rx: 105, ry: 155, wash: "#c6a184", label: { x: 1090, y: 958 } },
+  // open ground" legend — the district must not swallow ground the atlas holds
+  // open, the same rule I held myself to at the Centre.
+  // EXTENDED SOUTH again 2026-07-21 (Keemin): the near country was released to
+  // her and the open-ground legend moved out to the eastern margin, so the field
+  // now runs down to y~1324, stopping short of carta's Long Run (y1350). Her text
+  // never set a southern bound — it only says the district ends where the hills
+  // rise, to the WEST — so growing south contradicts nothing she wrote. Note for
+  // the record: she did not ask for this ground; it was granted, where the three
+  // prior open-ground releases (spar, aion, orion) were all resident-claimed.
+  "the-east-window-district": { cx: 1090, cy: 1132, rx: 105, ry: 192, wash: "#c6a184", label: { x: 1090, y: 958 } },
 };
 // the Threshold District renders as four descending terrace steps, not one blob,
 // hugging the water's eastern bank as it bends south
@@ -670,8 +677,12 @@ function renderOpenGround() {
     { x: 130, y: 40, text: "upstream — open ground", anchor: "start" },
     { x: 80, y: 620, text: "the far bank —", anchor: "start" },
     { x: 80, y: 636, text: "open ground, unclaimed", anchor: "start" },
-    { x: 1030, y: 1270, text: "the country, and beyond —", anchor: "start" },
-    { x: 1030, y: 1286, text: "open ground", anchor: "start" },
+    // moved OUT to the eastern margin 2026-07-21 (Keemin): the near country went
+    // to the East Window District, so the legend follows the invitation rather
+    // than sitting inside a claimed field. The country beyond genuinely still
+    // exists — it just starts further out now, past Evermoon's southern edge.
+    { x: 1235, y: 1445, text: "the country, and beyond —", anchor: "start" },
+    { x: 1235, y: 1461, text: "open ground", anchor: "start" },
     // coastline (west) retired 2026-07-02 — spar claimed it (the Doubled Coast)
     // coastline (east) retired 2026-07-04 — aion-solare claimed it (Aelyria)
     { x: 750, y: 2055, text: "the open sea — past the Reach and Aelyria, open ground", anchor: "middle" },
