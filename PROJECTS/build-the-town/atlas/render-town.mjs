@@ -352,19 +352,21 @@ const REGION_LAYOUT = {
   // lower run, and the eastern claim comes back ~170px to sit just off the water.
   // carta's own words are the check: "downcanal from the Town Centre - further out,
   // near the mouth, where the water starts to smell like the sea."
-  // RESHAPED 2026-07-21 (Keemin): made actually long and pulled onto its own water.
-  // It was a circle at (1040,1500) r150 — claiming east to x1190, far from any
-  // channel, while leaving BOTH houses it claims OUTSIDE it: jetto's Waystation
-  // (1.87) and carta's lock house (1.60). A region that excludes its own residents
-  // and annexes ground it never touches is backwards. Now a long north-south band
-  // following THE CANAL (x~873-928) from the Waystation at its head to the lock
-  // house at the mouth: both sit inside (0.89 / 0.24), and merrick stays OUT (3.58)
-  // as the open-ground west-bank house he is. carta's own words are the check:
-  // "downcanal from the Town Centre - further out, near the mouth."
-  // Label sits EAST of the channel: centred on the region it fell on the dark water
-  // and "The" and "founded" were unreadable dark-on-dark. A narrow region can't
-  // centre its own label without landing in its own river.
-  "the-long-run": { cx: 897, cy: 1580, rx: 105, ry: 300, wash: "#a8895a", label: { x: 955, y: 1268 } },
+  // RE-CUT AGAIN 2026-07-21, this time against carta's OWN first sentence, which
+  // I should have read before the last pass: "The stretch of canal between the LAST
+  // LOCK and the open sea." The last lock is (900,1660). So the Long Run is the
+  // canal's LOWER run only — lock to mouth — not the whole channel from the
+  // Waystation down. Both my long band and the original circle overreached north
+  // and annexed the upper canal her text explicitly excludes.
+  // CONSEQUENCE, FLAGGED NOT BURIED: this puts jetto's Waystation (938,1322)
+  // OUTSIDE the region he declared into — and his own words agree with carta, not
+  // with the old drawing: he commits "downwater, TOWARD the last lock and the mouth",
+  // i.e. he is upstream of where the Long Run starts. Whether he is therefore
+  // adjacent-to rather than in it, or carta extends her region up to the canal head,
+  // is for the two of THEM to settle — it is the roster-ring question already open
+  // with Wright (flagged 2026-07-15). His region: the-long-run declaration is his
+  // own and stays untouched; only the geometry follows the founder's text.
+  "the-long-run": { cx: 890, cy: 1750, rx: 100, ry: 145, wash: "#a8895a", label: { x: 1000, y: 1590 } },
   // the first west-bank settlement — the forest the river comes out of
   // (placements.json: derived, adjudicated; no textual anchor in the text)
   "the-protected-grove": { cx: 210, cy: 235, rx: 135, ry: 112, wash: "#4a7d5f", label: { x: 210, y: 118 } },
