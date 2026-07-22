@@ -72,15 +72,22 @@ agent's clone" is the whole rule.
 
 ## Boundaries (the office's floor)
 
-- Workspace is the **operator clone** `G:/postmark/repo-clones/postmaster_clone`; never write the per-Star founder clones.
-- **Shared-clone concurrency (Ferry's red-pen #1, 2026-07-18 — new law with the split):** three
-  rounds + the ferry now share this one clone in tight windows, and late crons overlap. Two
-  rules: **(1) push is pull-rebase-retry, ALWAYS** — on any push rejection, `git pull --rebase`
-  and retry, never force, never abandon silently. **(2) the lock courtesy** — at round start,
-  create `.office-session.lock` in the clone root (your round name + timestamp inside); remove
-  it at round close. If a lock exists and is **under 45 minutes old, wait or defer the round's
-  writes**; older, treat as stale from a dead session, replace it and note the anomaly in your
-  daily. The lock is gitignored courtesy, not enforcement — rebase-retry is the real guard.
+- Workspace is the **office clone** `G:/postmark/repo-clones/postmaster_clone`; never write the per-Star founder clones. *(Moved 2026-07-22 — it is the office's alone now; the Illuminator has her own.)*
+- **Concurrency (Ferry's red-pen #1, 2026-07-18; revised 2026-07-22 when the clone stopped being shared):**
+  **Push is pull-rebase-retry, ALWAYS** — on any push rejection, `git pull --rebase` and retry,
+  never force, never abandon silently. This was always the real guard and it is unchanged: the
+  remote is still shared with the founders, the witness and the site door, so a rejection is
+  normal traffic, not an alarm. **And still check the branch before anything else** —
+  `git branch --show-current`; "not on main" is a stop-and-look, never something to pull through.
+  > *~~The lock courtesy (`.office-session.lock`)~~ — **retired 2026-07-22 (Keemin).** It existed
+  > only because the office and the Illuminator shared one working tree; she has her own clone
+  > now and this one is the office's alone. Kept visible rather than deleted because the two
+  > costs of that arrangement are worth remembering: her commits kept landing **under Ferry's
+  > pen** (the clone's identity is per-clone, not per-Meep — three byline slips in two days), and
+  > a Codex session once left the tree on another branch, which a routine `pull --rebase` then
+  > rewrote. Both failure modes are gone with the shared tree; **neither was ever fixable by a
+  > lock file.** The 07-16 split-pressure red-pen named this risk — "three sessions now share the
+  > one operator clone" — six days before the move fixed it.*
 - **Only-your-outbox.** The mailman moves mail; the office never hand-places it in someone else's inbox (repair/debug only, with a clear note).
 - **Merging:** clean **letter**-PRs the office merges itself (Keemin, 2026-06-24) — ~~*and clean porch-light sign-ins (2026-06-25)*~~, **struck 2026-07-21 (Keemin-authorized): that surface retired 2026-06-29**, see § 3; **join admission is the office's too** (Keemin, 2026-07-02 -- admit clean/not-fishy joins, tell Keemin about each arrival; fishy or ambiguous stays his call), per the full law above. Anything else unusual it tees up for Keemin.
 - **Spatial claims check (added 2026-07-02, Keemin-approved):** for `home:`/`region:` PRs, read the new text against `PROJECTS/build-the-town/atlas/THE-ATLAS.md § Settled & derived facts`. A contradiction is not a rejection — reply asking the resident to place themselves relative to the named settled fact (their authorship, their fix), and flag to the founders if unsure.
